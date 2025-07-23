@@ -24,24 +24,44 @@ func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	reader := bufio.NewReader(conn)
 
-	// Read request line by line
+	//POST / HTTP/1.1
+	schema, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println(err)
+	}
+	proc := strings.Split(schema, " ")
+	method := proc[0]
+	url := proc[1]
+	httpVersion := proc[2]
+	headers := make(map[string]string)
+
+	fmt.Printf("接收到请求：%s %s %s\n", method, url, httpVersion)
 	for {
 		line, err := reader.ReadString('\n')
+		//fmt.Println(line)
 		if err != nil {
 			if err != io.EOF {
 				fmt.Println("Error reading from connection:", err)
 			}
 			break
 		}
-		fmt.Println("Line:", strings.TrimSpace(line))
 
-		// Check for the end of headers
 		if strings.TrimSpace(line) == "" {
 			response(conn)
 			break
 		}
+
+		header := strings.SplitN(line, ":", 2)
+		//fmt.Println(header)
+		headers[header[0]] = strings.TrimSpace(header[1])
+
 	}
-	fmt.Println("Connection closed")
+
+	for k, v := range headers {
+		fmt.Printf("%s: %s\n", k, v)
+	}
+
+	//request := Request{URL: url, Headers: headers, Method: method}
 }
 
 func main() {
