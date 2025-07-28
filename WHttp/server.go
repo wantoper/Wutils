@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -24,22 +25,19 @@ func response(conn net.Conn) {
 	writer.w.Flush()
 }
 
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
+func create_request(conn net.Conn) (*Request, error) {
 	reader := bufio.NewReader(conn)
 
-	//POST / HTTP/1.1
 	schema, err := reader.ReadString('\n')
 	if err != nil {
 		fmt.Println(err)
 	}
-	proc := strings.Split(schema, " ")
-	method := proc[0]
-	url := proc[1]
-	httpVersion := proc[2]
-	headers := make(map[string]string)
+	mehtod, rest, _ := strings.Cut(schema, " ")
+	requestURI, proto, _ := strings.Cut(rest, " ")
+	rawURI := "http://" + requestURI
+	parseRequestURI, _ := url.ParseRequestURI(rawURI)
 
-	fmt.Printf("接收到请求：%s %s %s\n", method, url, httpVersion)
+	headers := make(Header)
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
@@ -53,36 +51,54 @@ func handleConnection(conn net.Conn) {
 			break
 		}
 
-		header := strings.SplitN(line, ":", 2)
-		headers[header[0]] = strings.TrimSpace(header[1])
+		headerK, headerV, _ := strings.Cut(line, ":")
+		headers[headerK] = strings.TrimSpace(headerV)
 	}
+
+	if parseRequestURI.Host == "" {
+		parseRequestURI.Host = headers.Get("Host")
+	}
+	contenlength := headers.Get("Content-Length")
+	realLength, err := strconv.ParseInt(contenlength, 10, 64)
+	req := &Request{
+		Method: mehtod,
+		Proto:  proto,
+		Url:    parseRequestURI,
+		Header: headers,
+		//Body:   reader,
+		Body: io.LimitReader(reader, realLength),
+	}
+
+	return req, err
+}
+
+func handleConnection(conn net.Conn) {
+
+	request, _ := create_request(conn)
+	fmt.Println("New connection from", request.Url)
+
+	//for k, v := range request.Header {
+	//	fmt.Printf("%s: %s\n", k, v)
+	//}
+
+	//contentlen := request.Header.Get("Content-Length")
+	//contentLength, _ := strconv.Atoi(contentlen)
 	//
-	for k, v := range headers {
-		fmt.Printf("%s: %s\n", k, v)
-	}
+	//body := make([]byte, contentLength)
+	//request.Body.Read(body)
+	//
+	//bodystr := string(body)
+	//fmt.Println(bodystr)
 
-	_, ok := headers["Content-Length"]
-	if !ok {
-		fmt.Println("No Content-Length header")
-	}
-	contentLength, err := strconv.Atoi(headers["Content-Length"])
-	if err != nil {
-		fmt.Println("Invalid Content-Length header")
-	}
-
-	fmt.Println("内容长度：", contentLength)
-
-	body := make([]byte, contentLength)
-	_, err = reader.Read(body)
-	if err != nil {
-		fmt.Println("Error reading from connection:", err)
-	}
-
-	bodystr := string(body)
+	all, _ := io.ReadAll(request.Body)
+	fmt.Println("==================")
+	fmt.Println("stringall:", len(all))
+	bodystr := string(all)
 	fmt.Println(bodystr)
 
-	//request := Request{URL: url, Headers: headers, Method: method}
 	response(conn)
+
+	conn.Close()
 }
 
 func StartServer(address string) error {

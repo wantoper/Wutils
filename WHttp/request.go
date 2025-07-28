@@ -1,10 +1,14 @@
 package WHttp
 
-import "io"
+import (
+	"io"
+	"net/url"
+)
 
 type Request struct {
 	Method string // HTTP method (GET, POST, etc.)
-	Url    string // Request URL
+	Url    *url.URL
+	Proto  string
 	Header Header
-	Body   io.ReadCloser
+	Body   io.Reader
 }
