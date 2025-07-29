@@ -24,6 +24,18 @@ func NewServer(addr string) *Server {
 	}
 }
 
+func (s *Server) ListenAndServe() error {
+	return StartServer(s.Addr, s.Router)
+}
+
+func (s *Server) GET(path string, handler HandlerFunc) {
+	s.Router.GET(path, handler)
+}
+
+func (s *Server) POST(path string, handler HandlerFunc) {
+	s.Router.POST(path, handler)
+}
+
 func create_request(conn net.Conn) (*Request, error) {
 	reader := bufio.NewReader(conn)
 
@@ -84,18 +96,6 @@ func handleConnection(conn net.Conn, router *Router) {
 
 	writer.FinishRequest()
 	conn.Close()
-}
-
-func (s *Server) ListenAndServe() error {
-	return StartServer(s.Addr, s.Router)
-}
-
-func (s *Server) GET(path string, handler HandlerFunc) {
-	s.Router.GET(path, handler)
-}
-
-func (s *Server) POST(path string, handler HandlerFunc) {
-	s.Router.POST(path, handler)
 }
 
 func StartServer(address string, router *Router) error {
