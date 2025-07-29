@@ -14,9 +14,10 @@ type ResponseWriter interface {
 }
 
 type ResponseWriterImpl struct {
-	conn      *net.Conn
-	HeaderMap Header
-	w         bufio.Writer
+	conn        *net.Conn
+	HeaderMap   Header
+	w           bufio.Writer
+	writeStatus bool
 }
 
 func (rw *ResponseWriterImpl) Header() Header {
@@ -32,5 +33,27 @@ func (rw *ResponseWriterImpl) Write(b []byte) (int, error) {
 }
 
 func (rw *ResponseWriterImpl) SetStatus(statusCode int) {
+	if rw.writeStatus {
+		return
+	}
 	fmt.Fprintf(rw, "HTTP/1.1 %d %s\r\n", statusCode, http.StatusText(statusCode))
+	rw.writeStatus = true
+}
+
+func (rw *ResponseWriterImpl) WriteHeader() {
+	if rw.HeaderMap == nil {
+		return
+	}
+	for k, v := range rw.HeaderMap {
+		fmt.Fprintf(&rw.w, "%s: %s\r\n", k, v)
+	}
+}
+
+func (rw *ResponseWriterImpl) FinishRequest() {
+	if rw.conn != nil {
+		rw.WriteHeader()
+		rw.w.Flush()
+		(*rw.conn).Close()
+		rw.conn = nil
+	}
 }
