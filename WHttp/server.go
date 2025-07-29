@@ -10,6 +10,20 @@ import (
 	"strings"
 )
 
+// Server 表示HTTP服务器
+type Server struct {
+	Addr   string
+	Router *Router
+}
+
+// NewServer 创建一个新的HTTP服务器
+func NewServer(addr string) *Server {
+	return &Server{
+		Addr:   addr,
+		Router: NewRouter(),
+	}
+}
+
 func create_request(conn net.Conn) (*Request, error) {
 	reader := bufio.NewReader(conn)
 
@@ -56,34 +70,35 @@ func create_request(conn net.Conn) (*Request, error) {
 	return req, err
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn, router *Router) {
 	request, _ := create_request(conn)
 	fmt.Println("New connection from", request.Url)
-
-	//for k, v := range request.Header {
-	//	fmt.Printf("%s: %s\n", k, v)
-	//}
-
-	all, _ := io.ReadAll(request.Body)
-	bodystr := string(all)
-	fmt.Println(bodystr)
 
 	writer := ResponseWriterImpl{
 		w: *bufio.NewWriter(conn),
 	}
 
-	writer.SetStatus(302)
-	res := "Content-Type: text/plain\r\n" +
-		"Content-Length: 13\r\n" +
-		"\r\n" +
-		"Hello, World!"
-	writer.Write([]byte(res))
-	writer.w.Flush()
+	if router != nil {
+		router.ServeHTTP(&writer, request)
+	}
 
+	writer.FinishRequest()
 	conn.Close()
 }
 
-func StartServer(address string) error {
+func (s *Server) ListenAndServe() error {
+	return StartServer(s.Addr, s.Router)
+}
+
+func (s *Server) GET(path string, handler HandlerFunc) {
+	s.Router.GET(path, handler)
+}
+
+func (s *Server) POST(path string, handler HandlerFunc) {
+	s.Router.POST(path, handler)
+}
+
+func StartServer(address string, router *Router) error {
 	listen, err := net.Listen("tcp", address)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
@@ -91,6 +106,7 @@ func StartServer(address string) error {
 	}
 
 	defer listen.Close()
+	fmt.Printf("Server started on %s\n", address)
 
 	for {
 		conn, err := listen.Accept()
@@ -98,6 +114,6 @@ func StartServer(address string) error {
 			return err
 		}
 		fmt.Println("Accepting connection from", conn.RemoteAddr())
-		go handleConnection(conn)
+		go handleConnection(conn, router)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 )
 
 type ResponseWriter interface {
@@ -27,33 +28,34 @@ func (rw *ResponseWriterImpl) Header() Header {
 	return rw.HeaderMap
 }
 
-func (rw *ResponseWriterImpl) Write(b []byte) (int, error) {
-	n, err := rw.w.Write(b)
-	return n, err
-}
-
 func (rw *ResponseWriterImpl) SetStatus(statusCode int) {
 	if rw.writeStatus {
 		return
 	}
-	fmt.Fprintf(rw, "HTTP/1.1 %d %s\r\n", statusCode, http.StatusText(statusCode))
+	fmt.Fprintf(&rw.w, "HTTP/1.1 %d %s\r\n", statusCode, http.StatusText(statusCode))
 	rw.writeStatus = true
 }
 
-func (rw *ResponseWriterImpl) WriteHeader() {
+func (rw *ResponseWriterImpl) writeHeader() {
+	if !rw.writeStatus {
+		rw.SetStatus(200)
+	}
 	if rw.HeaderMap == nil {
 		return
 	}
 	for k, v := range rw.HeaderMap {
 		fmt.Fprintf(&rw.w, "%s: %s\r\n", k, v)
 	}
+	fmt.Fprintf(&rw.w, "\r\n")
+}
+
+func (rw *ResponseWriterImpl) Write(b []byte) (int, error) {
+	rw.Header().Set("Content-Length", strconv.Itoa(len(b)))
+	rw.writeHeader()
+	n, err := rw.w.Write(b)
+	return n, err
 }
 
 func (rw *ResponseWriterImpl) FinishRequest() {
-	if rw.conn != nil {
-		rw.WriteHeader()
-		rw.w.Flush()
-		(*rw.conn).Close()
-		rw.conn = nil
-	}
+	rw.w.Flush()
 }
