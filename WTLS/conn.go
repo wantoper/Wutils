@@ -8,9 +8,12 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/binary"
+	"encoding/pem"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
+	"os"
 	"time"
 )
 
@@ -163,19 +166,21 @@ func (c *WTLSConn) Read(b []byte) (n int, err error) {
 	// 读取加密数据长度
 	fmt.Println("来了 开始读取数据")
 
-	buffer := make([]byte, 1024)
+	var dataLen uint32
 
-	//if _, err := io.ReadFull(c.conn, buffer); err != nil {
+	err = binary.Read(c.conn, binary.LittleEndian, &dataLen)
+	data := make([]byte, dataLen)
+	if _, err := io.ReadFull(c.conn, data); err != nil {
+		return 0, err
+	}
+
+	// 解密数据
+	//plaintext, err := c.cipher.Open(nil, c.aesIV, data, nil)
+	//if err != nil {
 	//	return 0, err
 	//}
 
-	c.conn.Read(buffer)
-
-	// 解密数据
-	plaintext, err := c.cipher.Open(nil, c.aesIV, buffer, nil)
-	if err != nil {
-		return 0, err
-	}
+	plaintext, err := decrypt(data, c.privKey)
 
 	return copy(b, plaintext), nil
 }
@@ -183,18 +188,20 @@ func (c *WTLSConn) Read(b []byte) (n int, err error) {
 // Write 实现 io.Writer 接口
 func (c *WTLSConn) Write(b []byte) (n int, err error) {
 	// 加密数据
-	ciphertext := c.cipher.Seal(nil, c.aesIV, b, nil)
+	//ciphertext := c.cipher.Seal(nil, c.aesIV, b, nil)
+	bytes, err := encrypt(b, c.cert.PublicKey.(*rsa.PublicKey))
+	ciphertext := bytes
 
 	// 写入加密数据长度
-	if err := binary.Write(c.conn, binary.BigEndian, uint32(len(ciphertext))); err != nil {
-		return 0, err
-	}
+	//if err := binary.Write(c.conn, binary.BigEndian, uint32(len(ciphertext))); err != nil {
+	//	return 0, err
+	//}
 
 	// 写入加密数据
 	if _, err := c.conn.Write(ciphertext); err != nil {
 		return 0, err
 	}
-
+	fmt.Printf("发送数据: %s\n", b)
 	return len(b), nil
 }
 
@@ -223,4 +230,44 @@ func (c *WTLSConn) receiveWithLength() ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+// 从证书文件读取公钥
+func getPublicKey(certPath string) (*rsa.PublicKey, error) {
+	certBytes, err := os.ReadFile(certPath)
+	if err != nil {
+		return nil, err
+	}
+	block, _ := pem.Decode(certBytes)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return cert.PublicKey.(*rsa.PublicKey), nil
+}
+
+// 从私钥文件读取私钥
+func getPrivateKey(keyPath string) (*rsa.PrivateKey, error) {
+	keyBytes, err := ioutil.ReadFile(keyPath)
+	if err != nil {
+		return nil, err
+	}
+	block, _ := pem.Decode(keyBytes)
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block")
+	}
+	return x509.ParsePKCS1PrivateKey(block.Bytes)
+}
+
+// 加密函数
+func encrypt(plaintext []byte, publicKey *rsa.PublicKey) ([]byte, error) {
+	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, plaintext)
+}
+
+// 解密函数
+func decrypt(ciphertext []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
+	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
 }
