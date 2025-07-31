@@ -169,6 +169,7 @@ func (c *WTLSConn) Read(b []byte) (n int, err error) {
 	var dataLen uint32
 
 	err = binary.Read(c.conn, binary.LittleEndian, &dataLen)
+	fmt.Println("读取数据长度:", dataLen)
 	data := make([]byte, dataLen)
 	if _, err := io.ReadFull(c.conn, data); err != nil {
 		return 0, err

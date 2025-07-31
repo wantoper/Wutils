@@ -1,23 +1,11 @@
 package main
 
-import (
-	"WUtils/WTLS"
-	"fmt"
-	"log"
-)
+import "WUtils/WRsa"
 
 func main() {
-	client, _ := WTLS.NewWTLSClient()
-	err := client.Connect(":4433")
+	client, err := WRsa.NewRsaClient(":4443")
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	data := "Hello, WTLS Server!"
-	fmt.Println(data)
-	_, err = client.Write([]byte(data))
-	if err != nil {
-		log.Fatal("发送数据失败:", err)
-	} else {
-		log.Println("发送数据成功:", data)
-	}
+	client.Write([]byte("hello world test rsa world test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsa"))
 }

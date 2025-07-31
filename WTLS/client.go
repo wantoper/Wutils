@@ -51,7 +51,7 @@ func (c *WTLSClient) Connect(address string) error {
 
 	// 创建 WTLS 连接，如果有预加载的证书就使用它
 	c.conn = NewWTLSConn(conn, c.cert, nil)
-
+	fmt.Println("连接到服务器:", address)
 	// 执行握手
 	if err := c.conn.Handshake(); err != nil {
 		conn.Close()
