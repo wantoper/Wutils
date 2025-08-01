@@ -28,12 +28,19 @@ func (c RsaConn) Read(b []byte) (n int, err error) {
 	}
 
 	bytes, err := decrypt(b[:read], c.privateKey)
+	if err != nil {
+		fmt.Printf("Decrypt error: %v\n", err)
+	}
 	copy(b, bytes)
 	return len(bytes), err
 }
 
 func (c RsaConn) Write(b []byte) (n int, err error) {
 	encrypt, err := encrypt(b, c.publicKey)
+	if err != nil {
+		fmt.Printf("Encrypt error: %v\n", err)
+		return 0, err
+	}
 	return c.conn.Write(encrypt)
 }
 

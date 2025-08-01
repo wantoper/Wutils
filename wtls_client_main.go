@@ -7,5 +7,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	client.Write([]byte("hello world test rsa world test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsaworld test rsa"))
+	client.Write([]byte("测试的问题啊啊啊测试的问题啊啊啊测试的问题啊啊啊测试的问题啊啊啊测试的问题啊啊啊测试的问题啊题啊啊啊测试的问题啊题啊啊啊测试的问题啊"))
 }
