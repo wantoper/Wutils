@@ -1,4 +1,4 @@
-package WRsa
+package Util
 
 import (
 	"crypto/rand"
@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func getPublicKey(certPath string) (*rsa.PublicKey, error) {
+func GetPublicKey(certPath string) (*rsa.PublicKey, error) {
 	certBytes, err := os.ReadFile(certPath)
 	if err != nil {
 		return nil, err
@@ -27,7 +27,7 @@ func getPublicKey(certPath string) (*rsa.PublicKey, error) {
 }
 
 // 从私钥文件读取私钥
-func getPrivateKey(keyPath string) (*rsa.PrivateKey, error) {
+func GetPrivateKey(keyPath string) (*rsa.PrivateKey, error) {
 	keyBytes, err := ioutil.ReadFile(keyPath)
 	if err != nil {
 		return nil, err
@@ -40,11 +40,11 @@ func getPrivateKey(keyPath string) (*rsa.PrivateKey, error) {
 }
 
 // 加密函数
-func encrypt(plaintext []byte, publicKey *rsa.PublicKey) ([]byte, error) {
+func Encrypt_Rsa(plaintext []byte, publicKey *rsa.PublicKey) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, plaintext)
 }
 
 // 解密函数
-func decrypt(ciphertext []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
+func Decrypt_Rsa(ciphertext []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
 }

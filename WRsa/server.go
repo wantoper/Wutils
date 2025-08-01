@@ -1,6 +1,7 @@
 package WRsa
 
 import (
+	"WUtils/Util"
 	"fmt"
 	"net"
 )
@@ -26,7 +27,7 @@ func (s RsaServer) Accept() (net.Conn, error) {
 		return nil, err
 	}
 
-	publickey, _ := getPublicKey("server.crt")
-	privateKey, _ := getPrivateKey("server.key")
+	publickey, _ := Util.GetPublicKey("server.crt")
+	privateKey, _ := Util.GetPrivateKey("server.key")
 	return newRsaConn(conn, publickey, privateKey), nil
 }

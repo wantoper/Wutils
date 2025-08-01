@@ -1,6 +1,9 @@
 package WRsa
 
-import "net"
+import (
+	"WUtils/Util"
+	"net"
+)
 
 type RsaClient struct {
 	conn net.Conn
@@ -12,8 +15,8 @@ func NewRsaClient(address string) (*RsaClient, error) {
 		return nil, err
 	}
 
-	publickey, _ := getPublicKey("server.crt")
-	privateKey, _ := getPrivateKey("server.key")
+	publickey, _ := Util.GetPublicKey("server.crt")
+	privateKey, _ := Util.GetPrivateKey("server.key")
 
 	rsaConn := newRsaConn(conn, publickey, privateKey)
 	client := &RsaClient{conn: rsaConn}

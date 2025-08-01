@@ -1,6 +1,7 @@
 package WRsa
 
 import (
+	"WUtils/Util"
 	"crypto/rsa"
 	"fmt"
 	"net"
@@ -27,7 +28,7 @@ func (c RsaConn) Read(b []byte) (n int, err error) {
 		fmt.Printf("Read error: %v\n", err)
 	}
 
-	bytes, err := decrypt(b[:read], c.privateKey)
+	bytes, err := Util.Decrypt_Rsa(b[:read], c.privateKey)
 	if err != nil {
 		fmt.Printf("Decrypt error: %v\n", err)
 	}
@@ -36,7 +37,7 @@ func (c RsaConn) Read(b []byte) (n int, err error) {
 }
 
 func (c RsaConn) Write(b []byte) (n int, err error) {
-	encrypt, err := encrypt(b, c.publicKey)
+	encrypt, err := Util.Encrypt_Rsa(b, c.publicKey)
 	if err != nil {
 		fmt.Printf("Encrypt error: %v\n", err)
 		return 0, err
