@@ -1,11 +1,19 @@
 package main
 
-import "WUtils/WRsa"
+import (
+	"WUtils/WTls"
+	"fmt"
+)
 
 func main() {
-	client, err := WRsa.NewRsaClient(":4443")
+	client, err := WTls.Dial(":4443")
 	if err != nil {
 		panic(err)
 	}
-	client.Write([]byte("测试的问题啊啊啊测试的问题啊啊啊测试的问题啊啊啊测试的问题啊啊啊测试的问题啊啊啊测试的问题啊题啊啊啊测试的问题啊题啊啊啊测试的问题啊"))
+	write, err := client.Write([]byte("12333333333333333333333333333333333333333333"))
+	if err != nil {
+		fmt.Printf("Write error: %v\n", err)
+	}
+	fmt.Printf("Write %d bytes\n", write)
+	//client.Close()
 }

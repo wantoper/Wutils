@@ -40,11 +40,11 @@ func GetPrivateKey(keyPath string) (*rsa.PrivateKey, error) {
 }
 
 // 加密函数
-func Encrypt_Rsa(plaintext []byte, publicKey *rsa.PublicKey) ([]byte, error) {
+func Encrypt_RSA(plaintext []byte, publicKey *rsa.PublicKey) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, publicKey, plaintext)
 }
 
 // 解密函数
-func Decrypt_Rsa(ciphertext []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
+func Decrypt_RSA(ciphertext []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
 }

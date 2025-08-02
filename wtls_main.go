@@ -1,12 +1,15 @@
 package main
 
 import (
-	"WUtils/WRsa"
+	"WUtils/WTls"
+	"WUtils/WTls/Util"
 	"fmt"
 )
 
 func main() {
-	server, err := WRsa.NewRsaServer(":4443")
+	publickey, _ := Util.GetPublicKey("server.crt")
+	privateKey, _ := Util.GetPrivateKey("server.key")
+	server, err := WTls.NewTlsServer(":4443", publickey, privateKey)
 	if err != nil {
 		panic(err)
 	}
@@ -24,4 +27,6 @@ func main() {
 		}
 		fmt.Println(string(datas[:n]))
 	}
+
+	//WRsa.TestFun()
 }

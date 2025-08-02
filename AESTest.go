@@ -43,9 +43,9 @@ func decrypt_aes(ciphertext, key []byte) ([]byte, error) {
 }
 
 func main() {
-	//randonKey, err := getRandonKey()
-	randonKey := []byte("12345678901234567890123456789012") // 32 bytes for AES-256
-
+	randonKey, _ := getRandonKey()
+	//randonKey := []byte("12345678901234567890123456789012")
+	fmt.Println("randonKey:", randonKey)
 	key, _ := Util.GetPublicKey("server.crt")
 	bytes, _ := Util.Encrypt_Rsa(randonKey, key)
 
@@ -63,6 +63,6 @@ func main() {
 
 	pri_Key, _ := Util.GetPrivateKey("server.key")
 	rsa, _ := Util.Decrypt_Rsa(bytes, pri_Key)
-	fmt.Println(string(rsa))
+	fmt.Println(rsa)
 
 }
