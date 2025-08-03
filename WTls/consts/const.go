@@ -1,4 +1,4 @@
-package Const
+package consts
 
 const (
 	Version1_0 uint16 = 0x01

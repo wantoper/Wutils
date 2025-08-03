@@ -1,7 +1,7 @@
 package Util
 
 import (
-	"WUtils/WTls/Const"
+	"WUtils/WTls/consts"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -12,9 +12,9 @@ import (
 func GetRandonKey(version uint8) ([]byte, error) {
 	var length int
 	switch version {
-	case Const.AES_GCM_128:
+	case consts.AES_GCM_128:
 		length = 16 // AES-128
-	case Const.AES_GCM_256:
+	case consts.AES_GCM_256:
 		length = 32 // AES-256
 	}
 

@@ -1,9 +1,9 @@
 package WTls
 
 import (
-	"WUtils/WTls/Const"
 	"WUtils/WTls/Msg"
 	"WUtils/WTls/Util"
+	"WUtils/WTls/consts"
 	"crypto/rsa"
 	"fmt"
 	"net"
@@ -35,17 +35,15 @@ func (s TlsServer) Accept() (net.Conn, error) {
 		return nil, err
 	}
 
-	//publickey, _ := Util.GetPublicKey("server.crt")
-	//privateKey, _ := Util.GetPrivateKey("server.key")
 	tlsConn := newTlsConn(conn)
 	tlsConn.handShakeFn = s.HandShakeFunc
 	return tlsConn, nil
 }
 
-func (s TlsServer) HandShakeFunc(conn net.Conn) (net.Conn, error) {
+func (s TlsServer) HandShakeFunc(tlsconn *TlsConn) error {
 	client_hello := Msg.ClientHello{}
 	bytes := make([]byte, 1024)
-	n, _ := conn.Read(bytes)
+	n, _ := tlsconn.conn.Read(bytes)
 	client_hello.UnmarShal(bytes[:n])
 
 	use_cipher := client_hello.CipherSuites[0]
@@ -58,8 +56,10 @@ func (s TlsServer) HandShakeFunc(conn net.Conn) (net.Conn, error) {
 		KeyLength:   uint8(len(key)),
 		EncryptKey:  encryptRsa,
 	}
-	fmt.Printf("交换AES密钥 version: %v, cipherSuite: %v, keyLength: %v, key: %v, encryptKey: %v\n", server_hello.Version, Const.GetCipherSuiteName(server_hello.CipherSuite), server_hello.KeyLength, key, server_hello.EncryptKey)
+	fmt.Printf("交换AES密钥 version: %v, cipherSuite: %v, keyLength: %v, key: %v, encryptKey: %v\n", server_hello.Version, consts.GetCipherSuiteName(server_hello.CipherSuite), server_hello.KeyLength, key, server_hello.EncryptKey)
 	server_hello_data := server_hello.Marshal()
-	conn.Write(server_hello_data)
-	return conn, nil
+	tlsconn.conn.Write(server_hello_data)
+
+	tlsconn.key = key
+	return nil
 }

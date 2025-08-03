@@ -1,14 +1,14 @@
 package WTls
 
 import (
-	"WUtils/WTls/Const"
 	"WUtils/WTls/Msg"
+	"WUtils/WTls/consts"
 	"fmt"
 )
 
 func TestFun() string {
-	cipherSuites := []uint8{Const.AES_GCM_128, Const.AES_GCM_256, Const.AES_GCM_128, Const.AES_GCM_128, Const.AES_GCM_128}
-	hello := Msg.ClientHello{Version: Const.Version1_1, SuiteLength: uint8(255), CipherSuites: cipherSuites}
+	cipherSuites := []uint8{consts.AES_GCM_128, consts.AES_GCM_256, consts.AES_GCM_128, consts.AES_GCM_128, consts.AES_GCM_128}
+	hello := Msg.ClientHello{Version: consts.Version1_1, SuiteLength: uint8(255), CipherSuites: cipherSuites}
 
 	marshal := hello.Marshal()
 	fmt.Println(marshal)

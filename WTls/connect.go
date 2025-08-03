@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type HandShakeFunc func(conn net.Conn) (net.Conn, error)
+type HandShakeFunc func(tlsconn *TlsConn) error
 
 type TlsConn struct {
 	conn        net.Conn
@@ -17,21 +17,16 @@ type TlsConn struct {
 }
 
 func newTlsConn(conn net.Conn) TlsConn {
-	key := []byte("12345678901234567891234567891234")
+	//key := []byte("12345678901234567891234567891234")
 	return TlsConn{
 		conn: conn,
-		key:  key,
+		//key:  key,
 	}
 }
 
 func (c TlsConn) Read(b []byte) (n int, err error) {
-	if !c.handshake {
-		c.handshake = true
-		_, err = c.handShakeFn(c.conn)
-		if err != nil {
-			fmt.Printf("HandShake error: %v\n", err)
-			return 0, err
-		}
+	if c.HandShake() != nil {
+		return 0, fmt.Errorf("handshake failed")
 	}
 	read, err := c.conn.Read(b)
 	if err != nil {
@@ -48,14 +43,8 @@ func (c TlsConn) Read(b []byte) (n int, err error) {
 }
 
 func (c TlsConn) Write(b []byte) (n int, err error) {
-	if !c.handshake {
-		c.handshake = true
-		fmt.Printf("pointer address: %p\n", c.handShakeFn)
-		_, err = c.handShakeFn(c.conn)
-		if err != nil {
-			fmt.Printf("HandShake error: %v\n", err)
-			return 0, err
-		}
+	if c.HandShake() != nil {
+		return 0, fmt.Errorf("handshake failed")
 	}
 	encrypt, err := Util.Encrypt_AES(b, c.key)
 	//encrypt, err := Util.Encrypt_Rsa(b, c.publicKey)
@@ -88,4 +77,16 @@ func (c TlsConn) SetReadDeadline(t time.Time) error {
 
 func (c TlsConn) SetWriteDeadline(t time.Time) error {
 	return c.conn.SetWriteDeadline(t)
+}
+
+func (c TlsConn) HandShake() error {
+	if !c.handshake {
+		c.handshake = true
+		err := c.handShakeFn(&c)
+		if err != nil {
+			fmt.Printf("HandShake error: %v\n", err)
+			return err
+		}
+	}
+	return nil
 }
