@@ -1,9 +1,6 @@
 package main
 
-import (
-	"WUtils/WTls/Util"
-	"fmt"
-)
+import "WUtils/WHttp"
 
 func main() {
 	//randonKey, _ := getRandonKey()
@@ -28,13 +25,15 @@ func main() {
 	//rsa, _ := Util.Decrypt_Rsa(bytes, pri_Key)
 	//fmt.Println(rsa)
 
-	key, _ := Util.GetPublicKey("server.crt")
-	fmt.Println(key.E)
-	fmt.Println(key.N)
-	bytes, _ := Util.PublickeyToBytes(key)
-	fmt.Println(len(bytes))
-	fmt.Println("Public Key Bytes:", bytes)
-	publicKey, _ := Util.BytesToPublicKey(bytes)
-	fmt.Println(publicKey.E)
-	fmt.Println(publicKey.N)
+	//key, _ := Util.GetPublicKey("server.crt")
+	//fmt.Println(key.E)
+	//fmt.Println(key.N)
+	//bytes, _ := Util.PublickeyToBytes(key)
+	//fmt.Println(len(bytes))
+	//fmt.Println("Public Key Bytes:", bytes)
+	//publicKey, _ := Util.BytesToPublicKey(bytes)
+	//fmt.Println(publicKey.E)
+	//fmt.Println(publicKey.N)
+
+	WHttp.HiHttp()
 }

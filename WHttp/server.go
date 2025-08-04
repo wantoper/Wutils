@@ -1,6 +1,8 @@
 package WHttp
 
 import (
+	"WUtils/WTls"
+	"WUtils/WTls/Util"
 	"bufio"
 	"fmt"
 	"io"
@@ -99,13 +101,16 @@ func handleConnection(conn net.Conn, router *Router) {
 }
 
 func StartServer(address string, router *Router) error {
-	listen, err := net.Listen("tcp", address)
+	//listen, err := net.Listen("tcp", address)
+	publickey, _ := Util.GetPublicKey("server.crt")
+	privateKey, _ := Util.GetPrivateKey("server.key")
+	listen, err := WTls.NewTlsServer(address, publickey, privateKey)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
 		return err
 	}
 
-	defer listen.Close()
+	//defer listen.Close()
 	fmt.Printf("Server started on %s\n", address)
 
 	for {

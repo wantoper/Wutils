@@ -17,10 +17,8 @@ type TlsConn struct {
 }
 
 func newTlsConn(conn net.Conn) TlsConn {
-	//key := []byte("12345678901234567891234567891234")
 	return TlsConn{
 		conn: conn,
-		//key:  key,
 	}
 }
 
@@ -33,9 +31,7 @@ func (c *TlsConn) Read(b []byte) (n int, err error) {
 		fmt.Printf("Read error: %v\n", err)
 		return read, err
 	}
-
 	bytes, err := Util.Decrypt_AES(b[:read], c.key)
-	fmt.Println(c.key)
 	if err != nil {
 		fmt.Printf("Decrypt error: %v\n", err)
 	}
@@ -48,7 +44,6 @@ func (c *TlsConn) Write(b []byte) (n int, err error) {
 		return 0, fmt.Errorf("handshake failed")
 	}
 	encrypt, err := Util.Encrypt_AES(b, c.key)
-	//encrypt, err := Util.Encrypt_Rsa(b, c.publicKey)
 	if err != nil {
 		fmt.Printf("Encrypt error: %v\n", err)
 		return 0, err
