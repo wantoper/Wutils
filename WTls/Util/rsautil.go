@@ -48,3 +48,19 @@ func Encrypt_RSA(plaintext []byte, publicKey *rsa.PublicKey) ([]byte, error) {
 func Decrypt_RSA(ciphertext []byte, privateKey *rsa.PrivateKey) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, privateKey, ciphertext)
 }
+
+func PublickeyToBytes(publicKey *rsa.PublicKey) ([]byte, error) {
+	return x509.MarshalPKIXPublicKey(publicKey)
+}
+
+func BytesToPublicKey(pubKeyBytes []byte) (*rsa.PublicKey, error) {
+	pubKey, err := x509.ParsePKIXPublicKey(pubKeyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse public key: %w", err)
+	}
+	if rsaPubKey, ok := pubKey.(*rsa.PublicKey); ok {
+		return rsaPubKey, nil
+	}
+
+	return nil, fmt.Errorf("not an RSA public key")
+}

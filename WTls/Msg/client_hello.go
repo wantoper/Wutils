@@ -12,8 +12,8 @@ type ClientHello struct {
 }
 
 func (c *ClientHello) Marshal() []byte {
-	length := int(unsafe.Sizeof(c.Version)) + int(unsafe.Sizeof(c.SuiteLength)) + len(c.CipherSuites)
-	data := make([]byte, length)
+	dataSize := int(unsafe.Sizeof(c.Version)) + int(unsafe.Sizeof(c.SuiteLength)) + len(c.CipherSuites)
+	data := make([]byte, dataSize)
 	data[0] = byte(c.Version >> 8)
 	data[1] = byte(c.Version & 0xFF)
 	data[2] = c.SuiteLength

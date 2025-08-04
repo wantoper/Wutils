@@ -16,6 +16,7 @@ func main() {
 
 	for {
 		conn, err := server.Accept()
+		fmt.Println("Accept ....")
 		if err != nil {
 			panic(err)
 		}

@@ -24,17 +24,18 @@ func newTlsConn(conn net.Conn) TlsConn {
 	}
 }
 
-func (c TlsConn) Read(b []byte) (n int, err error) {
+func (c *TlsConn) Read(b []byte) (n int, err error) {
 	if c.HandShake() != nil {
 		return 0, fmt.Errorf("handshake failed")
 	}
 	read, err := c.conn.Read(b)
 	if err != nil {
 		fmt.Printf("Read error: %v\n", err)
+		return read, err
 	}
 
 	bytes, err := Util.Decrypt_AES(b[:read], c.key)
-	//bytes, err := Util.Decrypt_Rsa(b[:read], c.privateKey)
+	fmt.Println(c.key)
 	if err != nil {
 		fmt.Printf("Decrypt error: %v\n", err)
 	}
@@ -42,7 +43,7 @@ func (c TlsConn) Read(b []byte) (n int, err error) {
 	return len(bytes), err
 }
 
-func (c TlsConn) Write(b []byte) (n int, err error) {
+func (c *TlsConn) Write(b []byte) (n int, err error) {
 	if c.HandShake() != nil {
 		return 0, fmt.Errorf("handshake failed")
 	}
@@ -55,34 +56,36 @@ func (c TlsConn) Write(b []byte) (n int, err error) {
 	return c.conn.Write(encrypt)
 }
 
-func (c TlsConn) Close() error {
+func (c *TlsConn) Close() error {
 	return c.conn.Close()
 }
 
-func (c TlsConn) LocalAddr() net.Addr {
+func (c *TlsConn) LocalAddr() net.Addr {
 	return c.conn.LocalAddr()
 }
 
-func (c TlsConn) RemoteAddr() net.Addr {
+func (c *TlsConn) RemoteAddr() net.Addr {
 	return c.conn.RemoteAddr()
 }
 
-func (c TlsConn) SetDeadline(t time.Time) error {
+func (c *TlsConn) SetDeadline(t time.Time) error {
 	return c.conn.SetDeadline(t)
 }
 
-func (c TlsConn) SetReadDeadline(t time.Time) error {
+func (c *TlsConn) SetReadDeadline(t time.Time) error {
 	return c.conn.SetReadDeadline(t)
 }
 
-func (c TlsConn) SetWriteDeadline(t time.Time) error {
+func (c *TlsConn) SetWriteDeadline(t time.Time) error {
 	return c.conn.SetWriteDeadline(t)
 }
 
-func (c TlsConn) HandShake() error {
+func (c *TlsConn) HandShake() error {
 	if !c.handshake {
 		c.handshake = true
-		err := c.handShakeFn(&c)
+		fmt.Println("*[WTLS]WTLS handshake ....")
+		err := c.handShakeFn(c)
+		fmt.Printf("*[WTLS]WTLS handshake done,Session Key:%v\n", c.key)
 		if err != nil {
 			fmt.Printf("HandShake error: %v\n", err)
 			return err
