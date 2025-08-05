@@ -12,3 +12,11 @@ type Request struct {
 	Header Header
 	Body   io.Reader
 }
+
+type Response struct {
+	StatusCode    int
+	Proto         string
+	Header        Header
+	ContentLength int64
+	Body          io.Reader
+}

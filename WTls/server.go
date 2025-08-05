@@ -29,7 +29,7 @@ func NewTlsServer(address string, publickey *rsa.PublicKey, privateKey *rsa.Priv
 	return server, nil
 }
 
-func (s TlsServer) Accept() (net.Conn, error) {
+func (s *TlsServer) Accept() (net.Conn, error) {
 	conn, err := s.listener.Accept()
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (s TlsServer) Accept() (net.Conn, error) {
 	return &tlsConn, nil
 }
 
-func (s TlsServer) HandShakeFunc(tlsconn *TlsConn) error {
+func (s *TlsServer) HandShakeFunc(tlsconn *TlsConn) error {
 	client_hello := Msg.ClientHello{}
 	bytes := make([]byte, 1024)
 	n, _ := tlsconn.conn.Read(bytes)
@@ -71,4 +71,11 @@ func (s TlsServer) HandShakeFunc(tlsconn *TlsConn) error {
 	fmt.Printf("*[WTLS]接收密钥 exchange:cipherSuite: %v, keyLength: %v, encryptKey: %v\n", consts.GetCipherSuiteName(exchange.CipherSuite), exchange.KeyLength, decryptRsa)
 	tlsconn.key = decryptRsa
 	return nil
+}
+
+func (s *TlsServer) Close() {
+	if s.listener != nil {
+		s.listener.Close()
+	}
+	fmt.Println("WTlsServer closed")
 }

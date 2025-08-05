@@ -32,6 +32,7 @@ func (c *TlsConn) Read(b []byte) (n int, err error) {
 		return read, err
 	}
 	bytes, err := Util.Decrypt_AES(b[:read], c.key)
+	fmt.Println(string(bytes))
 	if err != nil {
 		fmt.Printf("Decrypt error: %v\n", err)
 	}

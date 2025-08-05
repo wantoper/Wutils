@@ -50,29 +50,12 @@ func create_request(conn net.Conn) (*Request, error) {
 	rawURI := "http://" + requestURI
 	parseRequestURI, _ := url.ParseRequestURI(rawURI)
 
-	headers := NewHeader()
-	for {
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			if err != io.EOF {
-				fmt.Println("Error reading from connection:", err)
-			}
-			break
-		}
-
-		if strings.EqualFold(line, "\r\n") {
-			break
-		}
-
-		headerK, headerV, _ := strings.Cut(line, ":")
-		headers[headerK] = strings.TrimSpace(headerV)
-	}
+	headers := ParserHeader(reader)
 
 	if parseRequestURI.Host == "" {
 		parseRequestURI.Host = headers.Get("Host")
 	}
-	contenlength := headers.Get("Content-Length")
-	realLength, err := strconv.ParseInt(contenlength, 10, 64)
+	realLength, err := strconv.ParseInt(headers.Get("Content-Length"), 10, 64)
 	req := &Request{
 		Method: mehtod,
 		Proto:  proto,
@@ -110,7 +93,7 @@ func StartServer(address string, router *Router) error {
 		return err
 	}
 
-	//defer listen.Close()
+	defer listen.Close()
 	fmt.Printf("Server started on %s\n", address)
 
 	for {
