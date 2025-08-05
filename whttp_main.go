@@ -15,6 +15,10 @@ func main() {
 	})
 
 	server.GET("/hello", func(w WHttp.ResponseWriter, r *WHttp.Request) {
+		fmt.Println("===================================================")
+		for key, values := range r.Header {
+			fmt.Printf("Header: %s = %s\n", key, values)
+		}
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Write([]byte("Hello, World!"))
 	})

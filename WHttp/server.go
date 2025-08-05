@@ -50,7 +50,7 @@ func create_request(conn net.Conn) (*Request, error) {
 	rawURI := "http://" + requestURI
 	parseRequestURI, _ := url.ParseRequestURI(rawURI)
 
-	headers := make(Header)
+	headers := NewHeader()
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {

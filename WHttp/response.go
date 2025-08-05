@@ -8,5 +8,5 @@ type Response struct {
 	Proto         string
 	Header        Header
 	ContentLength int64
-	Body          io.ReadCloser
+	Body          io.Reader
 }

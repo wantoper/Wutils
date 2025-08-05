@@ -43,10 +43,7 @@ func (rw *ResponseWriterImpl) writeHeader() {
 	if rw.HeaderMap == nil {
 		return
 	}
-	for k, v := range rw.HeaderMap {
-		fmt.Fprintf(&rw.w, "%s: %s\r\n", k, v)
-	}
-	fmt.Fprintf(&rw.w, "\r\n")
+	rw.HeaderMap.WriteHeaders(&rw.w)
 }
 
 func (rw *ResponseWriterImpl) Write(b []byte) (int, error) {
